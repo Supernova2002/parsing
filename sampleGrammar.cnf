@@ -81,6 +81,7 @@ Preposition --> to
 Preposition --> on
 Preposition --> near
 Preposition --> through
+S --> S S
 S --> NP VP
 S --> Verb NP
 S --> Verb PP
@@ -89,6 +90,7 @@ S --> book
 S --> include
 S --> prefer
 S --> fly
+S --> w
 S --> _Dummy3 VP
 S --> _Dummy4 S
 S --> _Dummy5 PP

@@ -11,9 +11,10 @@ def findNonTerm(aList, bList, productions):
             for production in productions:
                 prodTokens = nltk.word_tokenize(production)
                 if len(prodTokens) == 5:
+                    #print(prodTokens)
                     if aTerm == prodTokens[3] and bTerm == prodTokens[4]:  #issue is it isn't checking the order
                         if store == "":
-                            store = store + prodTokens[0]
+                            store = prodTokens[0]
                         else:
 
                             store = store + ","+ prodTokens[0]
@@ -53,13 +54,14 @@ while True:
     #as product size increases, start of diagonal shifts one to the right, and you have one less check
     for productSize in range(1, len(tokens)):
         for colCount in range (productSize, len(tokens)):
-           
+            print(colCount)
             row = (colCount-productSize)
             #aMat and bMat are each productSize steps out in each direction from their given square
             aMat = parseMat[row,colCount-productSize:colCount]
             tempPos = row+productSize  
             bMat = parseMat[row+1:tempPos+1,colCount]
             for i in range(len(aMat)):
+                
                 output = findNonTerm(aMat[i], bMat[i], productions)
                 if output != "":
                     if parseMat[row, colCount] == "":
@@ -80,8 +82,10 @@ while True:
         # good idea to break out all items to left of given square and below it into their own matrices, and just step through each of them in lockstep
        # while(localOffset<= len(tokens)-1-productSize):
         #    local
-    print(parseMat)
-        
+    
+    #print(parseMat)
+    final = len(parseMat[0,len(tokens)-1].split(','))
+    print(final)
 
 
 
