@@ -2,9 +2,44 @@ import numpy as np
 import nltk
 
 
+def printParse(inTuple, treeCheck,indent):
+    temp = ""
+    tree = ""
+    #print(type(inTuple[1]))
+    check = isinstance(inTuple[1], tuple)
+    #print(str(check))
+    if check is True:
+        firstParse,firstTree = printParse(inTuple[1][0],treeCheck,indent+1)
+        secondParse,secondTree = printParse(inTuple[1][1],treeCheck,indent+1)
+        temp = "[" + inTuple[0] + " " + firstParse + secondParse + ']'
+        tree = "[" + inTuple[0] + "\n" + firstTree + "\n " + secondTree + ']'
+        
+    else:
+       
+        temp = "[" + inTuple[0] + " " + inTuple[1] + " ]"
+        tree = "[" + inTuple[0] + " " + inTuple[1] + " ]"
+    if(indent>0):
+        for i in range(indent):
+            tree = "\t" + tree
+    return temp,tree
+
+def newFind(aCell,bCell,aMat, bMat, termMat):
+    #print("in new")
+    store = []
+    for aTuple in aCell:
+        for bTuple in bCell:
+            aTerm = aTuple[0]
+            bTerm = bTuple[0]
+            indices = [i for i, x in enumerate(aMat) if x == aTerm]
+            for index in indices:
+                if bMat[index] == bTerm:
+                    store.append((termMat[index], (aTuple,bTuple)))
+    return store
+
 def findNonTerm(aList, bList, aMat, bMat, termMat):
     aTerms = aList.split(',')
     bTerms = bList.split(',')
+   
     store = ""
     for aTerm in aTerms:
         for bTerm in bTerms:
@@ -21,9 +56,11 @@ def findNonTerm(aList, bList, aMat, bMat, termMat):
 
 
 print("Hello world")
-
-
-cnfFile = open("./sampleGrammar.cnf",'r')
+#Instead of parseMat, instead maybe just store each rule in a tree as it is traversed, and from top right traverse down from the left
+#
+fileName = input("Enter relative location of cnf file:\n")
+cnfFile = open(fileName, 'r')
+#cnfFile = open("./sampleGrammar.cnf",'r')
 productions =  cnfFile.readlines()
 nonTermList = []
 aList = []
@@ -42,21 +79,23 @@ while True:
         quit()
     tokens = nltk.word_tokenize(sentence)
     offset = 0
-    parseMat = [ [""]*len(tokens) for i in range(len(tokens))]
+    #parseMat = [ [""]*len(tokens) for i in range(len(tokens))]
+    parseMat = [[[] for i in range(len(tokens))] for i in range(len(tokens))]
+    traceMat = [ [[] for i in range(len(tokens))] for i in range(len(tokens))]
+    #traceMat[0][0].append((1,2))
+    
+    #print(traceMat)
     #parseMat =  np.array([["" for i in range(len(tokens))] for i in range(len(tokens))], dtype = object)
     #print(parseMat)
     for token in tokens:
         for production in productions:
-            prodTokens = nltk.word_tokenize(production)
+            prodTokens = nltk.word_tokenize(production) 
             if token in prodTokens:
-                if parseMat[offset][offset] == "":
-                    parseMat[offset][offset] = prodTokens[0]
-                else:
-                    parseMat[offset][offset] = parseMat[offset][offset] + "," + prodTokens[0]
-                #print(prodTokens[0])
+                parseMat[offset][offset].append((prodTokens[0],token))
+                
         offset = offset + 1
         #printing goes from lowest row to hightest row
-    print(parseMat)
+    #print(parseMat)
     productSize = 2
     callNum = 0
     #as product size increases, start of diagonal shifts one to the right, and you have one less check
@@ -72,19 +111,18 @@ while True:
                 bMat.append(parseMat[tempRow][colCount])
             #bMat = parseMat[row+1:tempPos+1][colCount]
             for i in range(len(aMat)):
-                if aMat[i] == "" or bMat[i] == "":
-                    output = ""
+                if aMat[i] == [] or bMat[i] == []:
+                    output = []
                 else:
+                    output = newFind(aMat[i], bMat[i], aList, bList, nonTermList)
                     #print("before call")
                     #print(callNum)
-                    output = findNonTerm(aMat[i], bMat[i], aList, bList, nonTermList)
+                    #output = findNonTerm(aMat[i], bMat[i], aList, bList, nonTermList)
                     #print("after call")
-                    callNum = callNum + 1
-                if output != "":
-                    if parseMat[row][colCount] == "":
-                        parseMat[row][colCount] = output
-                    else:
-                        parseMat[row][colCount] = parseMat[row][colCount] + "," + output 
+                    #callNum = callNum + 1
+                if output != []:
+                    for outTuple in output:
+                        parseMat[row][colCount].append(outTuple) 
             #each value at a given index in aMat is followed by the value in the given index at bMat
             #parseMat[row][colCount] = parseMat[row][colCount] + "visited, "
 
@@ -100,14 +138,20 @@ while True:
        # while(localOffset<= len(tokens)-1-productSize):
         #    local
     
-    print(parseMat)
-
-    final = len(parseMat[0][len(tokens)-1].split(','))
+    #print(parseMat[0][len(tokens)-1])
+    #print(traceMat)
+    final = len(parseMat[0][len(tokens)-1])
+    #final = len(parseMat[0][len(tokens)-1].split(','))
     if final == 0:
         print("No valid parses")
     else:
         print(str(final) + " valid parses")
-
+    parseCount = 1
+    for finalTuple in parseMat[0][len(tokens)-1]:
+        parse,tree = printParse(finalTuple,0,0)
+        print("Valid Parse # " +  str(parseCount) + ":\n" + parse)
+        print(tree)
+        parseCount = parseCount + 1
 
 
 
