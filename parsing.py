@@ -12,8 +12,10 @@ def printParse(inTuple, treeCheck,indent):
         firstParse,firstTree = printParse(inTuple[1][0],treeCheck,indent+1)
         secondParse,secondTree = printParse(inTuple[1][1],treeCheck,indent+1)
         temp = "[" + inTuple[0] + " " + firstParse + secondParse + ']'
-        tree = "[" + inTuple[0] + "\n" + firstTree + "\n " + secondTree + ']'
-        
+        tree = "[" + inTuple[0] + "\n" + firstTree + "\n " + secondTree + '\n'
+        for i in range(indent):
+            tree = tree + "\t"
+        tree = tree + ']\n'
     else:
        
         temp = "[" + inTuple[0] + " " + inTuple[1] + " ]"
@@ -55,11 +57,16 @@ def findNonTerm(aList, bList, aMat, bMat, termMat):
     return store
 
 
-print("Hello world")
+
 #Instead of parseMat, instead maybe just store each rule in a tree as it is traversed, and from top right traverse down from the left
 #
 fileName = input("Enter relative location of cnf file:\n")
 cnfFile = open(fileName, 'r')
+treeIn = input("Do you want textual trees to be displayed [y/n] ?: ")
+treeCheck = 0
+if treeIn  == "y":
+    treeCheck = 1
+
 #cnfFile = open("./sampleGrammar.cnf",'r')
 productions =  cnfFile.readlines()
 nonTermList = []
@@ -150,7 +157,8 @@ while True:
     for finalTuple in parseMat[0][len(tokens)-1]:
         parse,tree = printParse(finalTuple,0,0)
         print("Valid Parse # " +  str(parseCount) + ":\n" + parse)
-        print(tree)
+        if(treeCheck):
+            print(tree)
         parseCount = parseCount + 1
 
 
